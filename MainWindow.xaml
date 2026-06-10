@@ -29,7 +29,8 @@
                         <StackPanel Margin="0,0,0,15">
                             <Border Background="#E1E5EB" Padding="15,8" CornerRadius="4">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Name, Converter={StaticResource CategoryToTextConverter}}" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" />
+                                    <Ellipse Width="10" Height="10" Fill="{Binding Name, Converter={StaticResource CategoryToColorConverter}}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name, Converter={StaticResource CategoryToTextConverter}}" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding ItemCount, StringFormat=' ({0} 项)'}" VerticalAlignment="Center" Foreground="#7F8C8D" Margin="5,0,0,0" />
                                 </StackPanel>
                             </Border>
@@ -56,6 +57,13 @@
         <Border Grid.Row="0" Background="#2C3E50" Padding="20,15">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <!-- Brand Icon (Vector) -->
+                    <Viewbox Width="32" Height="32" Margin="0,0,15,0">
+                        <Canvas Width="24" Height="24">
+                            <Path Fill="#3498DB" Data="M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12Z" />
+                            <Path Fill="#E74C3C" Data="M7,12H9V12.12L11,10.12V10H13V10.12L15,8.12V8H17V8.12L12,13.12L7,8.12V12Z" Opacity="0.8" />
+                        </Canvas>
+                    </Viewbox>
                     <TextBlock Text="PCleaner" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
                     <Border Background="#34495E" CornerRadius="4" Padding="5,2" Margin="10,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="专业版" Foreground="#BDC3C7" FontSize="10" />
