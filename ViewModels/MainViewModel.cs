@@ -150,6 +150,13 @@ public partial class MainViewModel : ObservableObject
         if (string.IsNullOrEmpty(path)) return;
         try
         {
+            // 特殊处理回收站：使用 shell 指令打开虚拟目录，而不是物理路径
+            if (path.Contains("$Recycle.Bin", StringComparison.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", "shell:RecycleBinFolder");
+                return;
+            }
+
             System.Diagnostics.Process.Start("explorer.exe", path);
         }
         catch (Exception ex)
