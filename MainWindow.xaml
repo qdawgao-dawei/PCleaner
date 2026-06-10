@@ -30,7 +30,7 @@
                             <Border Background="#E1E5EB" Padding="15,8" CornerRadius="4">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name, Converter={StaticResource CategoryToTextConverter}}" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" />
-                                    <TextBlock Text="{Binding ItemCount, StringLength=' ({0} 项)'}" VerticalAlignment="Center" Foreground="#7F8C8D" Margin="5,0,0,0" />
+                                    <TextBlock Text="{Binding ItemCount, StringFormat=' ({0} 项)'}" VerticalAlignment="Center" Foreground="#7F8C8D" Margin="5,0,0,0" />
                                 </StackPanel>
                             </Border>
                             <ItemsPresenter />
@@ -101,27 +101,27 @@
                                 <TextBlock DockPanel.Dock="Left" Text="存储占用概览" FontWeight="Bold" />
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                     <TextBlock Text="已用 " Foreground="#7F8C8D" />
-                                    <TextBlock Text="{Binding SelectedDisk.UsedSpaceReadable}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding SelectedDisk.UsedSpaceReadable, Mode=OneWay}" FontWeight="Bold" />
                                     <TextBlock Text=" / " Foreground="#7F8C8D" />
-                                    <TextBlock Text="{Binding SelectedDisk.TotalSpaceReadable}" Foreground="#7F8C8D" />
+                                    <TextBlock Text="{Binding SelectedDisk.TotalSpaceReadable, Mode=OneWay}" Foreground="#7F8C8D" />
                                 </StackPanel>
                             </DockPanel>
                             
                             <Grid Height="24" Margin="0,0,0,15">
                                 <ProgressBar Value="{Binding SelectedDisk.UsedSpace, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#BDC3C7" Background="#ECF0F1" BorderThickness="0" />
                                 <ProgressBar Value="{Binding TotalCleanableSize, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#2ECC71" Background="Transparent" BorderThickness="0" />
-                                <TextBlock Text="{Binding SelectedDisk.FreeSpaceReadable, StringLength='可用 {0}'}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10" Foreground="#2C3E50" FontWeight="Bold" />
+                                <TextBlock Text="{Binding SelectedDisk.FreeSpaceReadable, StringFormat='可用 {0}'}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10" Foreground="#2C3E50" FontWeight="Bold" />
                             </Grid>
 
                             <StackPanel Orientation="Horizontal">
                                 <Border Style="{StaticResource TierPillStyle}" Background="#2ECC71">
-                                    <TextBlock Text="{Binding GreenSizeText, StringLength='可自动清理: {0}'}" Foreground="White" FontSize="11" />
+                                    <TextBlock Text="{Binding GreenSizeText, StringFormat='可自动清理: {0}'}" Foreground="White" FontSize="11" />
                                 </Border>
                                 <Border Style="{StaticResource TierPillStyle}" Background="#F39C12">
-                                    <TextBlock Text="{Binding YellowSizeText, StringLength='需人工判断: {0}'}" Foreground="White" FontSize="11" />
+                                    <TextBlock Text="{Binding YellowSizeText, StringFormat='需人工判断: {0}'}" Foreground="White" FontSize="11" />
                                 </Border>
                                 <Border Style="{StaticResource TierPillStyle}" Background="#E74C3C">
-                                    <TextBlock Text="{Binding RedSizeText, StringLength='建议不手删: {0}'}" Foreground="White" FontSize="11" />
+                                    <TextBlock Text="{Binding RedSizeText, StringFormat='建议不手删: {0}'}" Foreground="White" FontSize="11" />
                                 </Border>
                             </StackPanel>
                         </StackPanel>
