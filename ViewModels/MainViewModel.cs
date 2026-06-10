@@ -51,6 +51,12 @@ public partial class MainViewModel : ObservableObject
     private long _redTotalSize;
 
     [ObservableProperty]
+    private long _otherUsedSize;
+
+    [ObservableProperty]
+    private long _freeSpaceSize;
+
+    [ObservableProperty]
     private double _cleanablePercent;
 
     [ObservableProperty]
@@ -141,6 +147,7 @@ public partial class MainViewModel : ObservableObject
         
         _fileOpService.UseRecycleBin = UseRecycleBin;
         int successCount = 0;
+        int failCount = 0;
 
         await Task.Run(() =>
         {
@@ -155,13 +162,26 @@ public partial class MainViewModel : ObservableObject
                     });
                     successCount++;
                 }
+                else
+                {
+                    failCount++;
+                }
             }
         });
 
         UpdateTotalSize();
         LoadDisks(); 
         IsScanning = false;
-        StatusText = $"清理完成，成功执行 {successCount} 项安全清理任务";
+        
+        if (failCount > 0)
+        {
+            StatusText = $"清理完成：成功 {successCount} 项，{failCount} 项因文件锁定被跳过";
+            MessageBox.Show($"清理任务已结束。\n\n成功清理: {successCount} 个项目\n跳过项目: {failCount} 个 (原因：文件正在被其他程序占用或受保护)\n\n建议：请尝试关闭相关的应用程序（如浏览器、开发工具等）后再重试。", "部分完成", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        else
+        {
+            StatusText = $"清理完成，成功执行 {successCount} 项安全清理任务";
+        }
     }
 
     [RelayCommand]
@@ -214,7 +234,8 @@ public partial class MainViewModel : ObservableObject
         }
         else
         {
-            MessageBox.Show("操作失败。该目录可能正在被其他程序使用，或由于系统权限限制无法删除。");
+            StatusText = $"删除失败: {item.Name} 被占用";
+            MessageBox.Show($"无法删除项目‘{item.Name}’。\n\n原因：文件可能正在被其他程序（如浏览器或后台服务）使用，或者该目录受系统保护。\n\n建议：请尝试关闭相关的应用程序后再重试。", "操作被拦截", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
@@ -233,7 +254,13 @@ public partial class MainViewModel : ObservableObject
         if (SelectedDisk != null && SelectedDisk.TotalSpace > 0)
         {
             CleanablePercent = (double)TotalCleanableSize / SelectedDisk.TotalSpace * 100;
+            
+            // OtherUsed = TotalUsed - (Green + Yellow + Red scanned portions)
+            long scannedTotal = GreenTotalSize + YellowTotalSize + RedTotalSize;
+            OtherUsedSize = Math.Max(0, SelectedDisk.UsedSpace - scannedTotal);
+            FreeSpaceSize = SelectedDisk.FreeSpace;
         }
+        
         OnPropertyChanged(nameof(TotalCleanableSizeReadable));
     }
 

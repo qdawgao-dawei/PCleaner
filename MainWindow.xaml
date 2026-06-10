@@ -14,9 +14,7 @@
         <vm:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <vm:CategoryToColorConverter x:Key="CategoryToColorConverter" />
         <vm:CategoryToTextConverter x:Key="CategoryToTextConverter" />
-
-        <!-- Converter for cumulative progress bars -->
-        <vm:CumulativeSizeConverter x:Key="CumulativeSizeConverter" />
+        <vm:SizeToGridLengthConverter x:Key="SizeToGridLengthConverter" />
 
         <!-- Tier Pill Style -->
         <Style x:Key="TierPillStyle" TargetType="Border">
@@ -135,43 +133,24 @@
                             </DockPanel>
                             
                             <Grid Height="18" Margin="0,0,0,10">
-                                <!-- Base: Total Used (Grey) -->
-                                <ProgressBar Value="{Binding SelectedDisk.UsedSpace, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#BDC3C7" Background="#ECF0F1" BorderThickness="0" />
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding GreenTotalSize, Converter={StaticResource SizeToGridLengthConverter}}" />
+                                    <ColumnDefinition Width="{Binding YellowTotalSize, Converter={StaticResource SizeToGridLengthConverter}}" />
+                                    <ColumnDefinition Width="{Binding RedTotalSize, Converter={StaticResource SizeToGridLengthConverter}}" />
+                                    <ColumnDefinition Width="{Binding OtherUsedSize, Converter={StaticResource SizeToGridLengthConverter}}" />
+                                    <ColumnDefinition Width="{Binding FreeSpaceSize, Converter={StaticResource SizeToGridLengthConverter}}" />
+                                </Grid.ColumnDefinitions>
                                 
-                                <!-- Segment: Red (Green + Yellow + Red) - Bottom layer of colored bars -->
-                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#E74C3C" Background="Transparent" BorderThickness="0">
-                                    <ProgressBar.Value>
-                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Red">
-                                            <Binding Path="RedTotalSize" />
-                                            <Binding Path="YellowTotalSize" />
-                                            <Binding Path="GreenTotalSize" />
-                                        </MultiBinding>
-                                    </ProgressBar.Value>
-                                </ProgressBar>
+                                <!-- Segments -->
+                                <Rectangle Grid.Column="0" Fill="#2ECC71" ToolTip="可自动清理" />
+                                <Rectangle Grid.Column="1" Fill="#F39C12" ToolTip="需人工判断" />
+                                <Rectangle Grid.Column="2" Fill="#E74C3C" ToolTip="建议不手删" />
+                                <Rectangle Grid.Column="3" Fill="#BDC3C7" ToolTip="系统及其他" />
+                                <Rectangle Grid.Column="4" Fill="#ECF0F1" ToolTip="可用空间" />
 
-                                <!-- Segment: Yellow (Green + Yellow) -->
-                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#F39C12" Background="Transparent" BorderThickness="0">
-                                    <ProgressBar.Value>
-                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Yellow">
-                                            <Binding Path="RedTotalSize" />
-                                            <Binding Path="YellowTotalSize" />
-                                            <Binding Path="GreenTotalSize" />
-                                        </MultiBinding>
-                                    </ProgressBar.Value>
-                                </ProgressBar>
-
-                                <!-- Segment: Green (Only Green) - Top layer -->
-                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#2ECC71" Background="Transparent" BorderThickness="0">
-                                    <ProgressBar.Value>
-                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Green">
-                                            <Binding Path="RedTotalSize" />
-                                            <Binding Path="YellowTotalSize" />
-                                            <Binding Path="GreenTotalSize" />
-                                        </MultiBinding>
-                                    </ProgressBar.Value>
-                                </ProgressBar>
-
-                                <TextBlock Text="{Binding SelectedDisk.FreeSpaceReadable, StringFormat='可用 {0}'}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="9" Foreground="#2C3E50" FontWeight="Bold" />
+                                <!-- Overlay Text (Centered across the whole bar area) -->
+                                <TextBlock Grid.ColumnSpan="5" Text="{Binding SelectedDisk.FreeSpaceReadable, StringFormat='可用 {0}'}" 
+                                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="9" Foreground="#2C3E50" FontWeight="Bold" />
                             </Grid>
 
                             <StackPanel Orientation="Horizontal">
