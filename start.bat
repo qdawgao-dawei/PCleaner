@@ -12,5 +12,5 @@ if %errorlevel% neq 0 (
 )
 
 echo 编译成功，正在启动...
-start "" "bin\Release\net10.0-windows\PCleaner.exe"
+start "" "bin\Release\net8.0-windows\PCleaner.exe"
 exit

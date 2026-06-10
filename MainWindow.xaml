@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="PCleaner - 专业存储清理工具" Height="650" Width="900"
         WindowStartupLocation="CenterScreen" Background="#F5F6F7">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <vm:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    </Window.Resources>
+
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
@@ -42,11 +47,11 @@
                 <TextBlock Text="磁盘概览 (C:)" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,20,0" />
                 <StackPanel Grid.Column="1">
                     <Grid>
-                        <ProgressBar Height="20" Value="{Binding SelectedDisk.UsedSpace}" Maximum="{Binding SelectedDisk.TotalSpace}" Foreground="#0078D4" Background="#E1E1E1" />
+                        <ProgressBar Height="20" Value="{Binding SelectedDisk.UsedSpace, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#0078D4" Background="#E1E1E1" />
                         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11">
-                            <Run Text="{Binding SelectedDisk.UsedSpaceReadable}" />
+                            <Run Text="{Binding SelectedDisk.UsedSpaceReadable, Mode=OneWay}" />
                             <Run Text=" / " />
-                            <Run Text="{Binding SelectedDisk.TotalSpaceReadable}" />
+                            <Run Text="{Binding SelectedDisk.TotalSpaceReadable, Mode=OneWay}" />
                         </TextBlock>
                     </Grid>
                 </StackPanel>
@@ -104,16 +109,11 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <TextBlock VerticalAlignment="Center" Margin="0,0,20,0">
                     <Run Text="选中大小: " />
-                    <Run Text="{Binding TotalCleanableSizeReadable}" FontWeight="Bold" Foreground="#D13438" />
+                    <Run Text="{Binding TotalCleanableSizeReadable, Mode=OneWay}" FontWeight="Bold" Foreground="#D13438" />
                 </TextBlock>
                 <Button Content="一键清理绿色项" Command="{Binding CleanSelectedCommand}" Padding="25,10" 
                         Background="#D13438" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold" />
             </StackPanel>
         </DockPanel>
     </Grid>
-
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <vm:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-    </Window.Resources>
 </Window>
