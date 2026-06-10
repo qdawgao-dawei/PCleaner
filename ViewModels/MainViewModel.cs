@@ -114,7 +114,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CleanSelected()
+    private async Task CleanSelectedAsync()
     {
         var toClean = ScanItems.Where(i => i.IsSelected && i.Category == "Green").ToList();
         if (!toClean.Any())
@@ -126,21 +126,31 @@ public partial class MainViewModel : ObservableObject
         if (MessageBox.Show($"确定要一键清理选中的 {toClean.Count} 个安全项吗？\n这将立即释放约 {FormatSize(toClean.Sum(i => i.SizeBytes))} 空间。", "确认清理", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
             return;
 
+        IsScanning = true; // Use scanning state to show background progress
+        StatusText = "正在后台执行静默清理...";
+        
         _fileOpService.UseRecycleBin = UseRecycleBin;
         int successCount = 0;
 
-        foreach (var item in toClean)
+        await Task.Run(() =>
         {
-            if (_fileOpService.Delete(item.Path))
+            foreach (var item in toClean)
             {
-                ScanItems.Remove(item);
-                if (TopItems.Contains(item)) TopItems.Remove(item);
-                successCount++;
+                if (_fileOpService.Delete(item.Path))
+                {
+                    Application.Current.Dispatcher.Invoke(() => 
+                    {
+                        ScanItems.Remove(item);
+                        if (TopItems.Contains(item)) TopItems.Remove(item);
+                    });
+                    successCount++;
+                }
             }
-        }
+        });
 
         UpdateTotalSize();
-        LoadDisks(); // Refresh disk info
+        LoadDisks(); 
+        IsScanning = false;
         StatusText = $"清理完成，成功执行 {successCount} 项安全清理任务";
     }
 
@@ -166,7 +176,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void DeleteItem(ScanItem item)
+    private async Task DeleteItemAsync(ScanItem item)
     {
         if (item == null) return;
         
@@ -179,13 +189,17 @@ public partial class MainViewModel : ObservableObject
         if (MessageBox.Show(message, "单项删除确认", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
             return;
 
+        StatusText = $"正在删除: {item.Name}...";
         _fileOpService.UseRecycleBin = UseRecycleBin;
-        if (_fileOpService.Delete(item.Path))
+        
+        bool success = await Task.Run(() => _fileOpService.Delete(item.Path));
+
+        if (success)
         {
             ScanItems.Remove(item);
             if (TopItems.Contains(item)) TopItems.Remove(item);
             UpdateTotalSize();
-            LoadDisks(); // Refresh disk info
+            LoadDisks();
             StatusText = $"已成功移除: {item.Name}";
         }
         else
