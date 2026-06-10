@@ -162,7 +162,7 @@
 
                 <!-- Actionable Tiered Table -->
                 <TextBlock Text="执行建议" FontSize="18" FontWeight="Bold" Margin="0,10,0,10" Foreground="#2C3E50" />
-                <ListView ItemsSource="{Binding ScanItemsView}" BorderThickness="0" Background="White" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseWheel="UIElement_OnPreviewMouseWheel" SelectionMode="None">
+                <ListView ItemsSource="{Binding ScanItemsView}" BorderThickness="0" Background="White" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseWheel="UIElement_OnPreviewMouseWheel" SelectionMode="Single">
                     <ListView.Resources>
                         <!-- Hide the hover/selection blue highlight to keep it clean like a table -->
                         <Style TargetType="ListViewItem">
