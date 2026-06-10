@@ -7,15 +7,16 @@
         mc:Ignorable="d"
         Title="PCleaner - 专家级存储分析与清理" Height="800" Width="1000"
         WindowStartupLocation="CenterScreen" Background="#F0F2F5"
-        UseLayoutRounding="True" 
-        TextOptions.TextFormattingMode="Display"
-        TextOptions.TextRenderingMode="ClearType">
+        UseLayoutRounding="True">
     
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <vm:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <vm:CategoryToColorConverter x:Key="CategoryToColorConverter" />
         <vm:CategoryToTextConverter x:Key="CategoryToTextConverter" />
+
+        <!-- Converter for cumulative progress bars -->
+        <vm:CumulativeSizeConverter x:Key="CumulativeSizeConverter" />
 
         <!-- Tier Pill Style -->
         <Style x:Key="TierPillStyle" TargetType="Border">
@@ -121,8 +122,39 @@
                             </DockPanel>
                             
                             <Grid Height="18" Margin="0,0,0,10">
+                                <!-- Base: Total Used (Grey) -->
                                 <ProgressBar Value="{Binding SelectedDisk.UsedSpace, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#BDC3C7" Background="#ECF0F1" BorderThickness="0" />
-                                <ProgressBar Value="{Binding TotalCleanableSize, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#2ECC71" Background="Transparent" BorderThickness="0" />
+                                
+                                <!-- Segment: Green + Yellow + Red (This covers the stacked tiers) -->
+                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#2ECC71" Background="Transparent" BorderThickness="0">
+                                    <ProgressBar.Value>
+                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Green">
+                                            <Binding Path="RedTotalSize" />
+                                            <Binding Path="YellowTotalSize" />
+                                            <Binding Path="GreenTotalSize" />
+                                        </MultiBinding>
+                                    </ProgressBar.Value>
+                                </ProgressBar>
+
+                                <!-- Segment: Yellow + Red -->
+                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#F39C12" Background="Transparent" BorderThickness="0">
+                                    <ProgressBar.Value>
+                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Yellow">
+                                            <Binding Path="RedTotalSize" />
+                                            <Binding Path="YellowTotalSize" />
+                                        </MultiBinding>
+                                    </ProgressBar.Value>
+                                </ProgressBar>
+
+                                <!-- Segment: Red only -->
+                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#E74C3C" Background="Transparent" BorderThickness="0">
+                                    <ProgressBar.Value>
+                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Red">
+                                            <Binding Path="RedTotalSize" />
+                                        </MultiBinding>
+                                    </ProgressBar.Value>
+                                </ProgressBar>
+
                                 <TextBlock Text="{Binding SelectedDisk.FreeSpaceReadable, StringFormat='可用 {0}'}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="9" Foreground="#2C3E50" FontWeight="Bold" />
                             </Grid>
 

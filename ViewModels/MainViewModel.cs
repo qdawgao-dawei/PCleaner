@@ -38,7 +38,16 @@ public partial class MainViewModel : ObservableObject
     private bool _useRecycleBin = true;
 
     [ObservableProperty]
-    private long _totalCleanableSize;
+    private long _totalCleanableSize; // This remains as "Total Selected"
+
+    [ObservableProperty]
+    private long _greenTotalSize;
+
+    [ObservableProperty]
+    private long _yellowTotalSize;
+
+    [ObservableProperty]
+    private long _redTotalSize;
 
     [ObservableProperty]
     private double _cleanablePercent;
@@ -212,9 +221,13 @@ public partial class MainViewModel : ObservableObject
     {
         TotalCleanableSize = ScanItems.Where(i => i.IsSelected).Sum(i => i.SizeBytes);
         
-        GreenSizeText = FormatSize(ScanItems.Where(i => i.Category == "Green").Sum(i => i.SizeBytes));
-        YellowSizeText = FormatSize(ScanItems.Where(i => i.Category == "Yellow").Sum(i => i.SizeBytes));
-        RedSizeText = FormatSize(ScanItems.Where(i => i.Category == "Red").Sum(i => i.SizeBytes));
+        GreenTotalSize = ScanItems.Where(i => i.Category == "Green").Sum(i => i.SizeBytes);
+        YellowTotalSize = ScanItems.Where(i => i.Category == "Yellow").Sum(i => i.SizeBytes);
+        RedTotalSize = ScanItems.Where(i => i.Category == "Red").Sum(i => i.SizeBytes);
+
+        GreenSizeText = FormatSize(GreenTotalSize);
+        YellowSizeText = FormatSize(YellowTotalSize);
+        RedSizeText = FormatSize(RedTotalSize);
 
         if (SelectedDisk != null && SelectedDisk.TotalSpace > 0)
         {
