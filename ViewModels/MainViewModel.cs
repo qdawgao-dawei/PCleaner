@@ -88,6 +88,7 @@ public partial class MainViewModel : ObservableObject
         
         LoadDisks();
         PopulateDefaultSuggestions();
+        UpdateTotalSize();
     }
 
     private void PopulateDefaultSuggestions()
