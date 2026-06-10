@@ -124,7 +124,11 @@ public partial class MainViewModel : ObservableObject
         }
 
         // Identify Top 5 heavy hitters
-        var tops = results.OrderByDescending(i => i.SizeBytes).Take(5).ToList();
+        // First sort by category priority (Green -> Yellow -> Red), then by size descending
+        var tops = results.OrderBy(i => i.CategorySortIndex)
+                          .ThenByDescending(i => i.SizeBytes)
+                          .Take(5)
+                          .ToList();
         foreach (var top in tops) TopItems.Add(top);
 
         UpdateTotalSize();
