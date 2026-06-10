@@ -67,10 +67,19 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> _longTermSuggestions = new();
 
+    [ObservableProperty]
+    private bool _isAdmin;
+
+    [ObservableProperty]
+    private bool _showAdminWarning;
+
     public string TotalCleanableSizeReadable => FormatSize(TotalCleanableSize);
 
     public MainViewModel()
     {
+        IsAdmin = WindowsApi.IsAdministrator();
+        ShowAdminWarning = !IsAdmin;
+
         ScanItemsView = CollectionViewSource.GetDefaultView(ScanItems);
         ScanItemsView.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
         ScanItemsView.SortDescriptions.Add(new SortDescription("CategorySortIndex", ListSortDirection.Ascending));
@@ -78,6 +87,12 @@ public partial class MainViewModel : ObservableObject
         
         LoadDisks();
         PopulateDefaultSuggestions();
+    }
+
+    [RelayCommand]
+    private void RequestElevation()
+    {
+        WindowsApi.RestartAsAdmin();
     }
 
     private void PopulateDefaultSuggestions()
@@ -140,6 +155,7 @@ public partial class MainViewModel : ObservableObject
         
         _fileOpService.UseRecycleBin = UseRecycleBin;
         int successCount = 0;
+        bool hasPermissionIssue = false;
 
         await Task.Run(() =>
         {
@@ -154,6 +170,11 @@ public partial class MainViewModel : ObservableObject
                     });
                     successCount++;
                 }
+                else
+                {
+                    // 如果不是因为文件占用（简单判断），可能是权限问题
+                    hasPermissionIssue = true;
+                }
             }
         });
 
@@ -161,6 +182,14 @@ public partial class MainViewModel : ObservableObject
         LoadDisks(); 
         IsScanning = false;
         StatusText = $"清理完成，成功执行 {successCount} 项安全清理任务";
+
+        if (hasPermissionIssue && !IsAdmin)
+        {
+            if (MessageBox.Show("部分文件因权限不足无法删除。是否以管理员身份重新启动以获取完整权限？", "权限不足", MessageBoxButton.YesNo, MessageBoxImage.Shield) == MessageBoxResult.Yes)
+            {
+                WindowsApi.RestartAsAdmin();
+            }
+        }
     }
 
     [RelayCommand]
@@ -213,6 +242,14 @@ public partial class MainViewModel : ObservableObject
         }
         else
         {
+            if (!IsAdmin)
+            {
+                if (MessageBox.Show("删除失败。这通常是由于权限不足导致的。是否尝试以管理员身份重启？", "操作失败", MessageBoxButton.YesNo, MessageBoxImage.Error) == MessageBoxResult.Yes)
+                {
+                    WindowsApi.RestartAsAdmin();
+                    return;
+                }
+            }
             MessageBox.Show("操作失败。该目录可能正在被其他程序使用，或由于系统权限限制无法删除。");
         }
     }

@@ -30,6 +30,35 @@ public static class WindowsApi
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     private static extern int SHFileOperation(ref SHFILEOPSTRUCT lpFileOp);
 
+    public static bool IsAdministrator()
+    {
+        using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
+        {
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+    }
+
+    public static void RestartAsAdmin()
+    {
+        var processInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = System.Environment.ProcessPath,
+            UseShellExecute = true,
+            Verb = "runas" // 触发 UAC 提权
+        };
+
+        try
+        {
+            System.Diagnostics.Process.Start(processInfo);
+            System.Windows.Application.Current.Shutdown();
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // 用户取消了 UAC 提示
+        }
+    }
+
     public static bool SendToRecycleBin(string path)
     {
         try

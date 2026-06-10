@@ -76,6 +76,19 @@
                     </Border>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <!-- Admin Warning -->
+                    <Button Command="{Binding RequestElevationCommand}" Visibility="{Binding ShowAdminWarning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Background="#F39C12" Foreground="White" BorderThickness="0" Margin="0,0,15,0" Padding="10,4" Cursor="Hand" ToolTip="部分系统文件需要管理员权限才能清理">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🛡️ 以管理员身份运行" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="4"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    
                     <CheckBox Content="使用回收站" IsChecked="{Binding UseRecycleBin}" Foreground="#ECF0F1" VerticalAlignment="Center" Margin="0,0,15,0" FontSize="12" />
                     <Button Content="开始全面诊断" Command="{Binding StartScanCommand}" IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBooleanConverter}}"
                             Padding="20,6" Background="#3498DB" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold" FontSize="12">
