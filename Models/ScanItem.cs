@@ -9,6 +9,7 @@ public partial class ScanItem : ObservableObject
     public long SizeBytes { get; set; }
     public string Category { get; set; } = string.Empty; // Green, Yellow, Red
     public string Description { get; set; } = string.Empty;
+    public string RiskHint { get; set; } = string.Empty;
 
     [ObservableProperty]
     private bool _isSelected = true;
