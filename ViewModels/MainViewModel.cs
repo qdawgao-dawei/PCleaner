@@ -124,12 +124,16 @@ public partial class MainViewModel : ObservableObject
         }
 
         // Identify Top 5 heavy hitters
-        // First sort by category priority (Green -> Yellow -> Red), then by size descending
-        var tops = results.OrderBy(i => i.CategorySortIndex)
-                          .ThenByDescending(i => i.SizeBytes)
-                          .Take(5)
-                          .ToList();
-        foreach (var top in tops) TopItems.Add(top);
+        // Step 1: Pick the absolute largest 5 items overall
+        var absoluteTops = results.OrderByDescending(i => i.SizeBytes).Take(5).ToList();
+
+        // Step 2: Sort these 5 items by category priority (Green -> Yellow -> Red), 
+        // then by size descending within categories
+        var sortedTops = absoluteTops.OrderBy(i => i.CategorySortIndex)
+                                     .ThenByDescending(i => i.SizeBytes)
+                                     .ToList();
+
+        foreach (var top in sortedTops) TopItems.Add(top);
 
         UpdateTotalSize();
         IsScanning = false;
