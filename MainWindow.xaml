@@ -138,10 +138,10 @@
                                 <!-- Base: Total Used (Grey) -->
                                 <ProgressBar Value="{Binding SelectedDisk.UsedSpace, Mode=OneWay}" Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#BDC3C7" Background="#ECF0F1" BorderThickness="0" />
                                 
-                                <!-- Segment: Green + Yellow + Red (This covers the stacked tiers) -->
-                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#2ECC71" Background="Transparent" BorderThickness="0">
+                                <!-- Segment: Red (Green + Yellow + Red) - Bottom layer of colored bars -->
+                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#E74C3C" Background="Transparent" BorderThickness="0">
                                     <ProgressBar.Value>
-                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Green">
+                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Red">
                                             <Binding Path="RedTotalSize" />
                                             <Binding Path="YellowTotalSize" />
                                             <Binding Path="GreenTotalSize" />
@@ -149,21 +149,24 @@
                                     </ProgressBar.Value>
                                 </ProgressBar>
 
-                                <!-- Segment: Yellow + Red -->
+                                <!-- Segment: Yellow (Green + Yellow) -->
                                 <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#F39C12" Background="Transparent" BorderThickness="0">
                                     <ProgressBar.Value>
                                         <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Yellow">
                                             <Binding Path="RedTotalSize" />
                                             <Binding Path="YellowTotalSize" />
+                                            <Binding Path="GreenTotalSize" />
                                         </MultiBinding>
                                     </ProgressBar.Value>
                                 </ProgressBar>
 
-                                <!-- Segment: Red only -->
-                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#E74C3C" Background="Transparent" BorderThickness="0">
+                                <!-- Segment: Green (Only Green) - Top layer -->
+                                <ProgressBar Maximum="{Binding SelectedDisk.TotalSpace, Mode=OneWay}" Foreground="#2ECC71" Background="Transparent" BorderThickness="0">
                                     <ProgressBar.Value>
-                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Red">
+                                        <MultiBinding Converter="{StaticResource CumulativeSizeConverter}" ConverterParameter="Green">
                                             <Binding Path="RedTotalSize" />
+                                            <Binding Path="YellowTotalSize" />
+                                            <Binding Path="GreenTotalSize" />
                                         </MultiBinding>
                                     </ProgressBar.Value>
                                 </ProgressBar>

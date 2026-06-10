@@ -15,9 +15,9 @@ public class CumulativeSizeConverter : IMultiValueConverter
         string? type = parameter as string;
         return type switch
         {
-            "Red" => (double)red,
-            "Yellow" => (double)(red + yellow),
-            "Green" => (double)(red + yellow + green),
+            "Green" => (double)green,
+            "Yellow" => (double)(green + yellow),
+            "Red" => (double)(green + yellow + red),
             _ => 0.0
         };
     }
