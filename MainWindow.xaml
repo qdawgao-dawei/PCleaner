@@ -6,7 +6,10 @@
         xmlns:vm="clr-namespace:PCleaner.ViewModels"
         mc:Ignorable="d"
         Title="PCleaner - 专家级存储分析与清理" Height="800" Width="1000"
-        WindowStartupLocation="CenterScreen" Background="#F0F2F5">
+        WindowStartupLocation="CenterScreen" Background="#F0F2F5"
+        UseLayoutRounding="True" 
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
     
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
