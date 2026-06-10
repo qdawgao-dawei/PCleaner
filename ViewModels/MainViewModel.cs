@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PCleaner.Models;
@@ -17,6 +19,8 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<ScanItem> _scanItems = new();
+
+    public ICollectionView ScanItemsView { get; }
 
     [ObservableProperty]
     private ObservableCollection<DiskInfo> _disks = new();
@@ -36,10 +40,18 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private long _totalCleanableSize;
 
+    [ObservableProperty]
+    private double _cleanablePercent;
+
     public string TotalCleanableSizeReadable => FormatSize(TotalCleanableSize);
 
     public MainViewModel()
     {
+        ScanItemsView = CollectionViewSource.GetDefaultView(ScanItems);
+        ScanItemsView.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
+        ScanItemsView.SortDescriptions.Add(new SortDescription("Category", ListSortDirection.Ascending));
+        ScanItemsView.SortDescriptions.Add(new SortDescription("SizeBytes", ListSortDirection.Descending));
+        
         LoadDisks();
     }
 
@@ -56,6 +68,7 @@ public partial class MainViewModel : ObservableObject
         StatusText = "正在准备扫描...";
         ScanItems.Clear();
         TotalCleanableSize = 0;
+        CleanablePercent = 0;
 
         var progress = new Progress<string>(p => StatusText = p);
         var results = await _scannerService.ScanAsync(progress);
@@ -76,7 +89,7 @@ public partial class MainViewModel : ObservableObject
         var toClean = ScanItems.Where(i => i.IsSelected && i.Category == "Green").ToList();
         if (!toClean.Any())
         {
-            MessageBox.Show("没有选中任何可自动清理的项。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("没有选中任何可自动清理的项（绿色）。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -96,6 +109,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         UpdateTotalSize();
+        LoadDisks(); // Refresh disk info
         StatusText = $"清理完成，成功清理 {successCount} 个项";
     }
 
@@ -125,6 +139,7 @@ public partial class MainViewModel : ObservableObject
         {
             ScanItems.Remove(item);
             UpdateTotalSize();
+            LoadDisks(); // Refresh disk info
             StatusText = $"已删除: {item.Name}";
         }
         else
@@ -136,6 +151,10 @@ public partial class MainViewModel : ObservableObject
     private void UpdateTotalSize()
     {
         TotalCleanableSize = ScanItems.Where(i => i.IsSelected).Sum(i => i.SizeBytes);
+        if (SelectedDisk != null && SelectedDisk.TotalSpace > 0)
+        {
+            CleanablePercent = (double)TotalCleanableSize / SelectedDisk.TotalSpace * 100;
+        }
         OnPropertyChanged(nameof(TotalCleanableSizeReadable));
     }
 

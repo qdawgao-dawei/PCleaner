@@ -20,6 +20,7 @@ public class ScannerService
         var targets = new (string key, string path, string description, string category)[]
         {
             ("Temp", Path.Combine(_localAppData, "Temp"), "系统临时文件", "Green"),
+            ("User Temp", Path.Combine(Environment.GetEnvironmentVariable("TEMP") ?? ""), "用户临时目录", "Green"),
             ("Downloads", Path.Combine(_home, "Downloads"), "下载文件夹内容", "Yellow"),
             ("Npm Cache", Path.Combine(_home, ".npm"), "Node.js 缓存", "Green"),
             ("NuGet Packages", Path.Combine(_home, ".nuget", "packages"), "NuGet 包缓存", "Green"),
@@ -28,15 +29,20 @@ public class ScannerService
             ("Edge Cache", Path.Combine(_localAppData, "Microsoft", "Edge", "User Data", "Default", "Cache"), "Edge 浏览器缓存", "Green"),
             ("Maven Repo", Path.Combine(_home, ".m2", "repository"), "Maven 仓库", "Green"),
             ("Gradle Cache", Path.Combine(_home, ".gradle", "caches"), "Gradle 缓存", "Green"),
+            ("Cargo Registry", Path.Combine(_home, ".cargo", "registry"), "Rust Cargo 仓库", "Green"),
+            ("Yarn Cache", Path.Combine(_localAppData, "Yarn", "Cache"), "Yarn 缓存", "Green"),
+            ("Recycle Bin", "C:\\$Recycle.Bin", "回收站内容", "Yellow"),
         };
 
         foreach (var target in targets)
         {
+            if (string.IsNullOrEmpty(target.path)) continue;
+
             if (Directory.Exists(target.path))
             {
                 progress?.Report($"正在扫描: {target.key}");
                 long size = await Task.Run(() => GetDirectorySize(target.path));
-                if (size > 0)
+                if (size > 512) // Only show items larger than 0.5KB
                 {
                     items.Add(new ScanItem
                     {
