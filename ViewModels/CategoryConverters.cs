@@ -30,9 +30,9 @@ public class CategoryToTextConverter : IValueConverter
     {
         return value?.ToString() switch
         {
-            "Green" => "🟢 可自动清理",
-            "Yellow" => "🟡 需人工判断",
-            "Red" => "🔴 谨慎清理",
+            "Green" => "可自动清理",
+            "Yellow" => "需人工判断",
+            "Red" => "谨慎清理",
             _ => "其他"
         };
     }

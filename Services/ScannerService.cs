@@ -13,55 +13,132 @@ public class ScannerService
     private readonly string _localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     private readonly string _appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
+    private static readonly Dictionary<string, (string Name, string Desc, string Category, string Risk)> _knownApps = new()
+    {
+        { "Temp", ("系统临时文件", "应用程序生成的临时缓存和日志。", "Green", "") },
+        { "npm", ("Node.js 缓存", "已下载的 npm 包缓存。", "Green", "") },
+        { "NuGet", (".NET 包缓存", "NuGet 全局包缓存。", "Green", "") },
+        { "pip", ("Python pip 缓存", "pip 下载的安装包缓存。", "Green", "") },
+        { "Google\\Chrome\\User Data\\Default\\Cache", ("Chrome 缓存", "浏览器网页静态资源缓存。", "Green", "") },
+        { "Microsoft\\Edge\\User Data\\Default\\Cache", ("Edge 缓存", "Edge 浏览器网页缓存。", "Green", "") },
+        { "Spotify", ("Spotify 缓存", "离线下载的音乐和封面缓存。", "Green", "") },
+        { "Discord", ("Discord 缓存", "聊天图片和视频缓存。", "Green", "") },
+        { "Steam", ("Steam 缓存", "游戏着色器和下载缓存。", "Green", "") },
+        { "WeChat Files", ("微信记录", "微信聊天记录、图片和视频。", "Yellow", "风险：直接删除可能导致聊天图片失效。") },
+        { "Tencent", ("腾讯软件数据", "腾讯系列软件的运行数据。", "Yellow", "") },
+        { "Downloads", ("下载文件夹", "用户手动下载的文件地。", "Yellow", "注意：包含个人重要文档。") },
+        { "$Recycle.Bin", ("回收站", "已删除项的暂存地。", "Yellow", "提示：这是释放空间的最后一步。") }
+    };
+
     public async Task<List<ScanItem>> ScanAsync(IProgress<string> progress)
     {
         var items = new List<ScanItem>();
-        
-        var targets = new (string key, string path, string description, string category, string riskHint)[]
+
+        // 1. Scan Known Critical Hotspots
+        var hotspots = new[]
         {
-            // Green: Automatic Cleanup
-            ("系统临时文件", Path.Combine(_localAppData, "Temp"), "包含应用程序运行时生成的临时缓存和日志文件。清理后不影响应用正常运行，系统会自动重新生成所需文件。建议定期清理以释放空间。", "Green", ""),
-            ("用户临时目录", Path.Combine(Environment.GetEnvironmentVariable("TEMP") ?? ""), "Windows 用户级的临时存储空间。包含安装程序残留和会话缓存。清理这些文件是非常安全的。", "Green", ""),
-            ("Npm 缓存", Path.Combine(_home, ".npm"), "Node.js 包管理器的本地缓存。包含已下载过的 npm 包。清理后下次安装包时会从网络重新下载，速度可能稍慢。", "Green", ""),
-            ("NuGet 缓存", Path.Combine(_home, ".nuget", "packages"), ".NET 开发的全局包缓存。包含所有已下载的项目依赖。清理可释放大量空间，编译新项目时会自动恢复。", "Green", ""),
-            ("Pip 缓存", Path.Combine(_localAppData, "pip", "Cache"), "Python pip 的安装包缓存。包含历史下载的 whl 和源码包。清理这些离线文件不影响已安装的库。", "Green", ""),
-            ("Maven 仓库", Path.Combine(_home, ".m2", "repository"), "Java Maven 项目的本地依赖仓库。长期积累会占用巨大空间。清理后 IDE 会根据项目需求重新下载依赖。", "Green", ""),
-            ("Gradle 缓存", Path.Combine(_home, ".gradle", "caches"), "Gradle 构建工具的缓存和依赖。包含各种版本的库文件。清理后首次构建项目会比较慢，因为需要重下资源。", "Green", ""),
-            ("浏览器缓存", Path.Combine(_localAppData, "Google", "Chrome", "User Data", "Default", "Cache"), "浏览器浏览网页时留下的图片和静态资源缓存。清理后网页首次加载可能稍慢，但不影响书签和登录态。", "Green", ""),
-            
-            // Yellow: Manual Review
-            ("下载文件夹", Path.Combine(_home, "Downloads"), "用户手动下载的所有文件存放地。这里可能包含重要的文档、安装包或个人资料。建议进入文件夹手动筛选后再决定删除。", "Yellow", "注意：删除后可能无法找回你的个人下载文档。"),
-            ("回收站", "C:\\$Recycle.Bin", "系统回收站暂存的已删除项。虽然不占用用户感知空间，但实际占用物理磁盘。建议清空前确认没有误删的重要文件。", "Yellow", "提示：清空回收站是释放空间的最后一步。"),
-            ("WeChat 缓存", Path.Combine(_home, "Documents", "WeChat Files"), "微信的聊天记录、图片和视频。这里通常是占用空间的大头。建议在微信应用内使用其自带的清理工具进行精细操作。", "Yellow", "风险：直接删除可能导致聊天图片或视频无法查看。"),
-            
-            // Red: Caution
-            ("应用安装目录", Environment.GetEnvironmentVariable("ProgramFiles") ?? @"C:\Program Files", "系统安装的主要应用程序所在地。虽然占用大，但不建议手动删除此处的文件夹。如需卸载，请前往‘设置 > 应用’进行标准卸载。", "Red", "警告：手动删除可能导致应用损坏且残留注册表垃圾。"),
+            Path.Combine(_localAppData, "Temp"),
+            Path.Combine(_home, ".npm"),
+            Path.Combine(_home, ".nuget", "packages"),
+            Path.Combine(_home, "Downloads"),
+            "C:\\$Recycle.Bin"
         };
 
-        foreach (var target in targets)
+        foreach (var path in hotspots)
         {
-            if (string.IsNullOrEmpty(target.path)) continue;
-
-            if (Directory.Exists(target.path))
+            if (Directory.Exists(path))
             {
-                progress?.Report($"正在诊断: {target.key}");
-                long size = await Task.Run(() => GetDirectorySize(target.path));
-                if (size > 1024 * 1024 * 1) // 只显示大于 1MB 的项，减少干扰
-                {
-                    items.Add(new ScanItem
-                    {
-                        Name = target.key,
-                        Path = target.path,
-                        SizeBytes = size,
-                        Category = target.category,
-                        Description = target.description,
-                        RiskHint = target.riskHint
-                    });
-                }
+                var item = await ScanDirectoryInternalAsync(path, progress);
+                if (item != null && item.SizeBytes > 1024 * 1024) items.Add(item);
             }
         }
 
-        return items;
+        // 2. Dynamic App Scanning (Local & Roaming)
+        // This is the core logic from the skill: scan children and identify apps
+        items.AddRange(await ScanAppDataAsync(_localAppData, "Local", progress));
+        items.AddRange(await ScanAppDataAsync(_appData, "Roaming", progress));
+
+        // 3. System Cleanups
+        var progFiles = Environment.GetEnvironmentVariable("ProgramFiles") ?? @"C:\Program Files";
+        if (Directory.Exists(progFiles))
+        {
+            items.Add(new ScanItem
+            {
+                Name = "应用安装目录",
+                Path = progFiles,
+                SizeBytes = await Task.Run(() => GetDirectorySize(progFiles)),
+                Category = "Red",
+                Description = "系统安装的应用本体所在地。不建议手动删除。",
+                RiskHint = "警告：请使用系统‘设置’进行卸载。"
+            });
+        }
+
+        // Filter and Deduplicate
+        return items.GroupBy(i => i.Path)
+                    .Select(g => g.First())
+                    .Where(i => i.SizeBytes > 1024 * 1024 * 5) // Minimum 5MB to show
+                    .OrderByDescending(i => i.SizeBytes)
+                    .ToList();
+    }
+
+    private async Task<List<ScanItem>> ScanAppDataAsync(string root, string label, IProgress<string> progress)
+    {
+        var results = new List<ScanItem>();
+        if (!Directory.Exists(root)) return results;
+
+        try
+        {
+            var subDirs = Directory.GetDirectories(root);
+            foreach (var dir in subDirs)
+            {
+                var name = Path.GetFileName(dir);
+                progress?.Report($"正在诊断 {label}: {name}");
+
+                var item = await ScanDirectoryInternalAsync(dir, progress);
+                if (item != null) results.Add(item);
+            }
+        }
+        catch { }
+        return results;
+    }
+
+    private async Task<ScanItem?> ScanDirectoryInternalAsync(string path, IProgress<string> progress)
+    {
+        try
+        {
+            long size = await Task.Run(() => GetDirectorySize(path));
+            if (size <= 0) return null;
+
+            var name = Path.GetFileName(path);
+            var item = new ScanItem { Name = name, Path = path, SizeBytes = size };
+
+            // Match against known apps for better metadata
+            bool matched = false;
+            foreach (var entry in _knownApps)
+            {
+                if (path.Contains(entry.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Name = entry.Value.Name;
+                    item.Description = entry.Value.Desc;
+                    item.Category = entry.Value.Category;
+                    item.RiskHint = entry.Value.Risk;
+                    item.IsSelected = item.Category == "Green";
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched)
+            {
+                item.Name = $"{name} 数据";
+                item.Description = "识别到该应用占用了一定空间。通常包含应用配置、缓存或用户生成数据。";
+                item.Category = "Yellow";
+                item.IsSelected = false;
+            }
+
+            return item;
+        }
+        catch { return null; }
     }
 
     private long GetDirectorySize(string path)
@@ -70,12 +147,24 @@ public class ScannerService
         try
         {
             var dirInfo = new DirectoryInfo(path);
-            size += dirInfo.EnumerateFiles("*", SearchOption.AllDirectories)
-                          .Sum(f => f.Length);
+            // Non-recursive first level to avoid infinite deep dives for performance, 
+            // but the skill expects total size. We'll do a safe recursion.
+            size = GetSizeSafe(dirInfo, 0);
         }
-        catch (UnauthorizedAccessException) { }
-        catch (DirectoryNotFoundException) { }
-        catch (Exception) { }
+        catch { }
+        return size;
+    }
+
+    private long GetSizeSafe(DirectoryInfo d, int depth)
+    {
+        if (depth > 5) return 0; // Prevent hanging on symlink loops
+        long size = 0;
+        try
+        {
+            foreach (var f in d.EnumerateFiles()) size += f.Length;
+            foreach (var sub in d.EnumerateDirectories()) size += GetSizeSafe(sub, depth + 1);
+        }
+        catch { }
         return size;
     }
 

@@ -12,7 +12,7 @@ public partial class ScanItem : ObservableObject
     public string RiskHint { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _isSelected = true;
+    private bool _isSelected = false;
 
     public string SizeReadable
     {
