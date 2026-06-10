@@ -64,7 +64,7 @@ public partial class MainViewModel : ObservableObject
     {
         ScanItemsView = CollectionViewSource.GetDefaultView(ScanItems);
         ScanItemsView.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
-        ScanItemsView.SortDescriptions.Add(new SortDescription("Category", ListSortDirection.Ascending));
+        ScanItemsView.SortDescriptions.Add(new SortDescription("CategorySortIndex", ListSortDirection.Ascending));
         ScanItemsView.SortDescriptions.Add(new SortDescription("SizeBytes", ListSortDirection.Descending));
         
         LoadDisks();

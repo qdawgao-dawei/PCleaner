@@ -8,6 +8,7 @@ public partial class ScanItem : ObservableObject
     public string Path { get; set; } = string.Empty;
     public long SizeBytes { get; set; }
     public string Category { get; set; } = string.Empty; // Green, Yellow, Red
+    public int CategorySortIndex { get; set; }
     public string Description { get; set; } = string.Empty;
     public string RiskHint { get; set; } = string.Empty;
 

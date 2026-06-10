@@ -68,6 +68,7 @@ public class ScannerService
                 Path = progFiles,
                 SizeBytes = await Task.Run(() => GetDirectorySize(progFiles)),
                 Category = "Red",
+                CategorySortIndex = 2,
                 Description = "系统安装的应用本体所在地。不建议手动删除。",
                 RiskHint = "警告：请使用系统‘设置’进行卸载。"
             });
@@ -121,6 +122,7 @@ public class ScannerService
                     item.Name = entry.Value.Name;
                     item.Description = entry.Value.Desc;
                     item.Category = entry.Value.Category;
+                    item.CategorySortIndex = item.Category == "Green" ? 0 : 1;
                     item.RiskHint = entry.Value.Risk;
                     item.IsSelected = item.Category == "Green";
                     matched = true;
@@ -133,6 +135,7 @@ public class ScannerService
                 item.Name = $"{name} 数据";
                 item.Description = "识别到该应用占用了一定空间。通常包含应用配置、缓存或用户生成数据。";
                 item.Category = "Yellow";
+                item.CategorySortIndex = 1;
                 item.IsSelected = false;
             }
 
