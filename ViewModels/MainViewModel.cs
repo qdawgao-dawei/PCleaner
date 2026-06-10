@@ -36,6 +36,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isScanning;
 
     [ObservableProperty]
+    private bool _hasScannedData;
+
+    [ObservableProperty]
     private bool _useRecycleBin = true;
 
     [ObservableProperty]
@@ -126,6 +129,7 @@ public partial class MainViewModel : ObservableObject
 
         UpdateTotalSize();
         IsScanning = false;
+        HasScannedData = true;
         StatusText = $"诊断完成，识别到 {ScanItems.Count} 个主要占用源";
     }
 
